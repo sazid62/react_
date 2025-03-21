@@ -7,12 +7,12 @@ const user = JSON.parse(
 );
 const users = JSON.parse(
   localStorage.getItem("userinfo") ||
-    '[{"id":"1","email":"jesan@gmail.com","password":"1234","img":"https://i.pravatar.cc/48?u=118834"}]'
+    '[{"id":"1","email":"sajid@gmail.com","password":"1234","img":"https://i.pravatar.cc/48?u=118834"}]'
 );
 
 const posts = JSON.parse(
   localStorage.getItem("allPosts") ||
-    '[{"post_id":"","user_id":"","isHidden":false,"postText":"","countReact":[{"reactor_id":""}],"Comments":[{"comment_id":"", "commentor_id":"","CommentText":"","commentor_name":"","commentor_img":"","Replies":[{"reply_id":"", "replier_id":"","ReplyText":"","replier_img":"","replier_name":""}]}]}]'
+    '[{"post_time" : "", "post_id":"","user_id":"","isHidden":false,"postText":"","countReact":[{"reactor_id":""}],"Comments":[{  "like_comment_userList" : [{"user_name" : ""}]   ,                    "comment_id":"", "commentor_id":"","CommentText":"","commentor_name":"","commentor_img":"","Replies":[{"reply_id":"", "replier_id":"","ReplyText":"","replier_img":"","replier_name":""}]}]}]'
 );
 const initialState = {
   user_info: users,
@@ -36,7 +36,7 @@ export const userSlice = createSlice({
           return elem;
         }
       });
-   //  console.log("i am in loginuser slice", action.payload.password);
+      //  console.log("i am in loginuser slice", action.payload.password);
       if (find) {
         state.currentuser = find;
         localStorage.setItem("current_user", JSON.stringify(find));
@@ -72,7 +72,7 @@ export const userSlice = createSlice({
           img:
             "https://i.pravatar.cc/48?u=115" +
             String(Math.floor(Math.random() * 1000)),
-        }
+        };
         state.user_info.push(newuser);
         Swal.fire({
           title: "user created succesfully!!",
@@ -112,9 +112,6 @@ export const userSlice = createSlice({
             elem.reactor_id === state.currentuser.id
         );
         if (user_alrdy_reacted !== -1) {
-          // alert('bhai ar dis naa')
-          // console.log(user_alrdy_reacted);
-          // remove the curr user reaction
           const updatedReactions = state.AllUserPost[idx].countReact.filter(
             (elem: { reactor_id: string }) =>
               elem.reactor_id !== state.currentuser.id
@@ -166,7 +163,7 @@ export const userSlice = createSlice({
 
       if (idx !== -1) {
         const newComment = {
-          comment_id:nanoid(),
+          comment_id: nanoid(),
           commentor_id: state.currentuser.id,
           CommentText: CommentText,
           commentor_name: state.currentuser.email.slice(
@@ -175,6 +172,7 @@ export const userSlice = createSlice({
           ),
           commentor_img: state.currentuser.img,
           Replies: [],
+          like_comment_userList: [],
         };
 
         const temp = {
@@ -187,9 +185,43 @@ export const userSlice = createSlice({
           temp,
           ...state.AllUserPost.slice(idx + 1),
         ];
-        localStorage.setItem('allPosts',JSON.stringify(state.AllUserPost))
+        localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
       }
-   //   console.log(state.AllUserPost[idx]);
+      //   console.log(state.AllUserPost[idx]);
+    },
+
+    AddLikeToComment: (state, action) => {
+      const { liker_id, comment_id } = action.payload;
+
+      if (state.currentuser.id === "") {
+        Swal.fire({
+          title: "Please login to like a comment!",
+          icon: "info",
+        });
+        return;
+      }
+
+      state.AllUserPost.forEach((post) => {
+        post.Comments.forEach((comment) => {
+          if (comment.comment_id === comment_id) {
+            const likedIndex = comment.like_comment_userList.findIndex(
+              (user) => user.user_name === state.currentuser.email
+            );
+
+            if (likedIndex !== -1) {
+              // Unlike the comment (remove user from like list)
+              comment.like_comment_userList.splice(likedIndex, 1);
+            } else {
+              // Like the comment (add user to like list)
+              comment.like_comment_userList.push({
+                user_name: state.currentuser.email,
+              });
+            }
+          }
+        });
+      });
+
+      localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
     },
     AddPost: (state, action) => {
       if (state.currentuser.id === "") {
@@ -199,23 +231,24 @@ export const userSlice = createSlice({
         });
         return;
       }
-      
+
       const { postText } = action.payload;
       const newPost = {
         post_id: nanoid(),
         user_id: state.currentuser.id,
         postText: postText,
-        isHidden:false,
+        isHidden: false,
         countReact: [],
         Comments: [],
+        post_time: Date.now(),
       };
 
       state.AllUserPost = [...state.AllUserPost, newPost];
       localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
       Swal.fire({
-        title: 'Posted',
+        title: "Posted",
         toast: true,
-        position: 'top-right',
+        position: "top-right",
         showConfirmButton: false,
         timer: 1000,
         timerProgressBar: true,
@@ -225,23 +258,27 @@ export const userSlice = createSlice({
       });
       // console.log(state.AllUserPost)
     },
-    
+
     AddReply: (state, action) => {
-      const { post_id, comment_id, replyText, replier_img, replier_name } = action.payload;
-    
-      const pIdx = state.AllUserPost.findIndex((post:Post) => post.post_id === post_id);
-      if(state.currentuser.email === '')
-      {
+      const { post_id, comment_id, replyText, replier_img, replier_name } =
+        action.payload;
+
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
+      if (state.currentuser.email === "") {
         return;
       }
-    
+
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
-        const cIdx = post.Comments.findIndex((comment:Comment) => comment.comment_id === comment_id);
-    
+        const cIdx = post.Comments.findIndex(
+          (comment: Comment) => comment.comment_id === comment_id
+        );
+
         if (cIdx !== -1) {
           const comment = post.Comments[cIdx];
-    
+
           const newReply = {
             reply_id: nanoid(),
             replier_id: state.currentuser.id,
@@ -249,12 +286,12 @@ export const userSlice = createSlice({
             replier_img: replier_img,
             replier_name: replier_name,
           };
-    
+
           const updatedComment = {
             ...comment,
             Replies: [...comment.Replies, newReply],
           };
-    
+
           const temp = {
             ...post,
             Comments: [
@@ -263,13 +300,13 @@ export const userSlice = createSlice({
               ...post.Comments.slice(cIdx + 1),
             ],
           };
-    
+
           state.AllUserPost = [
             ...state.AllUserPost.slice(0, pIdx),
             temp,
             ...state.AllUserPost.slice(pIdx + 1),
           ];
-    
+
           localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
           console.log(state.AllUserPost);
         }
@@ -278,9 +315,10 @@ export const userSlice = createSlice({
     DeletePost: (state, action) => {
       const { post_id } = action.payload;
 
-      const pIdx = state.AllUserPost.findIndex((post: Post) => post.post_id === post_id);
-      
-      
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
+
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
 
@@ -290,45 +328,46 @@ export const userSlice = createSlice({
             ...state.AllUserPost.slice(pIdx + 1),
           ];
 
-          localStorage.setItem('allPosts', JSON.stringify(state.AllUserPost));
+          localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
           Swal.fire({
-            title: 'Post deleted successfully!',
-            icon: 'success',
+            title: "Post deleted successfully!",
+            icon: "success",
           });
         } else {
           Swal.fire({
-            title: 'You are not authorized!',
-            icon: 'error',
+            title: "You are not authorized!",
+            icon: "error",
           });
         }
       }
     },
     HidePost: (state, action) => {
       const { post_id } = action.payload;
-    
-      const pIdx = state.AllUserPost.findIndex((post: Post) => post.post_id === post_id);
-      console.log(post_id)
+
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
+      console.log(post_id);
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
-        console.log(post)
+        console.log(post);
         if (post.user_id === state.currentuser.id) {
           const temp = {
             ...post,
             isHidden: !post.isHidden,
           };
-    
+
           state.AllUserPost = [
             ...state.AllUserPost.slice(0, pIdx),
             temp,
             ...state.AllUserPost.slice(pIdx + 1),
           ];
-          console.log(temp)
-          localStorage.setItem('allPosts', JSON.stringify(state.AllUserPost));
-          
+          console.log(temp);
+          localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
         } else {
           Swal.fire({
-            title: 'You are not authorized!!',
-            icon: 'error',
+            title: "You are not authorized!!",
+            icon: "error",
           });
         }
       }
@@ -336,7 +375,9 @@ export const userSlice = createSlice({
     EditPost: (state, action) => {
       const { post_id, newText } = action.payload;
 
-      const pIdx = state.AllUserPost.findIndex((post: Post) => post.post_id === post_id);
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
 
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
@@ -353,11 +394,11 @@ export const userSlice = createSlice({
             ...state.AllUserPost.slice(pIdx + 1),
           ];
 
-          localStorage.setItem('allPosts', JSON.stringify(state.AllUserPost));
+          localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
         } else {
           Swal.fire({
-            title: 'You are not authorized',
-            icon: 'error',
+            title: "You are not authorized",
+            icon: "error",
           });
         }
       }
@@ -375,6 +416,7 @@ export const {
   AddReply,
   DeletePost,
   HidePost,
-  EditPost
+  EditPost,
+  AddLikeToComment,
 } = userSlice.actions;
 export default userSlice.reducer;

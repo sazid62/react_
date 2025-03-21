@@ -1,12 +1,13 @@
 export interface Reply {
-  reply_id:string,
-  replier_id: string,
-  replier_img:string,
-  replier_name:string,
+  reply_id: string;
+  replier_id: string;
+  replier_img: string;
+  replier_name: string;
   ReplyText: string;
 }
-
-
+export interface CommentLike {
+  comment_liker_id: string;
+}
 
 export interface Reaction {
   reactor_id: string;
@@ -14,40 +15,39 @@ export interface Reaction {
 
 export interface Post {
   post_id: string;
+  post_time: number;
   user_id: string;
-  postText: string,
-  isHidden:boolean;
-  countReact: Reaction[],
+  postText: string;
+  isHidden: boolean;
+  countReact: Reaction[];
   Comments: Comment[];
 }
 
 export interface Comment {
-  comment_id:string,
+  comment_id: string;
   commentor_id: string;
   CommentText: string;
-  commentor_name:string;
-  commentor_img:string,
+  commentor_name: string;
+  commentor_img: string;
+  like_comment_userList: CommentLike[];
+
   Replies: Reply[];
 }
 
 export interface userStruct {
-    id: string;
-    email: string;
-    password: string;
-    img:string,
-    AllUserPost: Post[];
-  }
+  id: string;
+  email: string;
+  password: string;
+  img: string;
+  AllUserPost: Post[];
+}
 
+export interface stateStruct {
+  user_info: userStruct[];
+  currentuser: userStruct;
+  AllUserPost: Post[];
+}
 
-  export interface stateStruct {
-    user_info: userStruct[];
-    currentuser: userStruct;
-    AllUserPost:Post[]
-
-   
-  
-  }
-
-  export interface CommentWPostId extends Comment{
-    post_id:string
+export interface CommentWPostId extends Comment {
+  post_id: string;
 }

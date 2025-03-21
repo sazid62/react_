@@ -43,6 +43,9 @@ export default function RecentComment(props: PostExtends) {
             Replies={postInfo?.Comments[0].Replies || []}
             post_id={props.post_id}
             commentor_id={postInfo?.Comments[0].commentor_id || ""}
+            like_comment_userList={
+              postInfo?.Comments[0].like_comment_userList || []
+            }
           />
         ) : (
           <></>

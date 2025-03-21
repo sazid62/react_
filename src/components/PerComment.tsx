@@ -1,15 +1,37 @@
 import { useState } from "react";
-import { CommentWPostId } from "../interfaces/user_interface";
+import { CommentWPostId, stateStruct } from "../interfaces/user_interface";
 import ReplySection from "./ReplySection";
 import AllReply from "./AllReply";
 import { Button } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { AddLikeToComment } from "../features/login/Userslice";
+import { UseSelector } from "react-redux";
 
 export default function PerComment(props: CommentWPostId) {
-  const { commentor_img, commentor_name, CommentText,Replies } = props;
+  const dispatch = useDispatch();
+
+  const { commentor_img, commentor_name, CommentText, Replies } = props;
   const [reply, setReply] = useState<boolean>(false);
-  // console.log(reply);
+  const current_user = useSelector((state: stateStruct) => state.currentuser);
+  const userLikedBefore = props.like_comment_userList.some(
+    (user) => user.user_name === current_user.email
+  );
+
+  const [like, setlike] = useState<boolean>(userLikedBefore ? true : false);
+
   function handleReply() {
     setReply(!reply);
+  }
+
+  function handleLike() {
+    // console.log(props.like_comment_userList);
+    setlike(!like);
+    dispatch(
+      AddLikeToComment({
+        liker_id: current_user.email,
+        comment_id: props.comment_id,
+      })
+    );
   }
 
   return (
@@ -33,17 +55,24 @@ export default function PerComment(props: CommentWPostId) {
           {reply ? (
             <>
               <AllReply replies={props.Replies} />
-              <Button 
-                onClick={handleReply} 
+              <Button
+                onClick={handleReply}
                 className="text-blue-600 text-sm font-medium hover:underline"
-                >
+              >
                 Hide Replies
-                </Button>
+              </Button>
               <ReplySection {...props} />
-              
             </>
           ) : (
             <div className="flex flex-row gap-2">
+              <button
+                onClick={handleLike}
+                className={`text-blue-600 text-sm font-medium hover:underline  ${
+                  like ? "font-bold" : "font-normal"
+                }    `}
+              >
+                {props.like_comment_userList.length} {like ? "likes" : "like"}
+              </button>
               <button
                 onClick={handleReply}
                 className="text-blue-600 text-sm font-medium hover:underline"
@@ -55,7 +84,7 @@ export default function PerComment(props: CommentWPostId) {
                 onClick={handleReply}
                 className="text-blue-600 text-sm hover:underline font-bold"
               >
-               {Replies.length} Replies
+                {Replies.length} Replies
               </button>
             </div>
           )}

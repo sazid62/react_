@@ -7,12 +7,16 @@ import {
   LikeFilled,
   LikeOutlined,
 } from "@ant-design/icons";
-import CommentSection from "../commentComponents/CommentSection"; 
-import RecentComment from "./RecentComment"; 
+import CommentSection from "../commentComponents/CommentSection";
+import RecentComment from "./RecentComment";
 import Swal from "sweetalert2";
 import { Post, stateStruct } from "../../interfaces/user_interface";
-import { AddReact, DeletePost, EditPost, HidePost } from "../../features/post/PostSlice";
-
+import {
+  AddReact,
+  DeletePost,
+  EditPost,
+  HidePost,
+} from "../../features/post/PostSlice";
 
 interface PostExtends extends Post {
   show: boolean;
@@ -59,7 +63,7 @@ export default function PerNewsFeed(props: PostExtends) {
         //  console.log("shown");
       } else {
         notifyDropdown.classList.remove("show");
-     //   console.log("hidden");
+        //   console.log("hidden");
       }
     }
   }, [isDropShow, props]);
@@ -88,7 +92,7 @@ export default function PerNewsFeed(props: PostExtends) {
         post_id: props.post_id,
       })
     );
-   // console.log("we are in webpage  " + props.post_id);
+    // console.log("we are in webpage  " + props.post_id);
   }
   function handleDelete() {
     Swal.fire({
@@ -351,21 +355,32 @@ export default function PerNewsFeed(props: PostExtends) {
             <div className="">
               <button className="mx-1 flex flex-row items-center gap-1">
                 <p className="font-bold text-blue-600">
-                  {postInfo?.countReact.length === 0?'':(postInfo?.countReact.length)}
+                  {postInfo?.countReact.length === 0
+                    ? ""
+                    : postInfo?.countReact.length}
                 </p>
-                <h1> 
-                  {
-                    postInfo?.countReact.length ===0?'':(postInfo?.countReact.length ===1?'Like':"Likes")
-                  }
+                <h1>
+                  {postInfo?.countReact.length === 0
+                    ? ""
+                    : postInfo?.countReact.length === 1
+                    ? "Like"
+                    : "Likes"}
                 </h1>
               </button>
-              
             </div>
             <div className="_feed_inner_timeline_total_reacts_txt">
               <p className="_feed_inner_timeline_total_reacts_para1">
                 <a onClick={props.handleShowCmnt} href="#0">
-                  <span>{postInfo?.Comments.length === 0?'':(postInfo?.Comments.length)}</span> 
-                  {postInfo?.Comments.length === 0?'': (postInfo?.Comments.length === 1?" Comment":" Comments")}
+                  <span>
+                    {postInfo?.Comments.length === 0
+                      ? ""
+                      : postInfo?.Comments.length}
+                  </span>
+                  {postInfo?.Comments.length === 0
+                    ? ""
+                    : postInfo?.Comments.length === 1
+                    ? " Comment"
+                    : " Comments"}
                 </a>
               </p>
               <p className="_feed_inner_timeline_total_reacts_para2">

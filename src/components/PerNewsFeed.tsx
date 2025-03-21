@@ -25,7 +25,6 @@ export default function PerNewsFeed(props: PostExtends) {
   const [isDropShow, setIsDropShow] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-
   const handleButtonClick = () => {
     setIsDropShow((prev) => !prev);
   };
@@ -74,6 +73,7 @@ export default function PerNewsFeed(props: PostExtends) {
   const postInfo = useSelector((state: stateStruct) => state.AllUserPost).find(
     (elem) => elem.post_id === props.post_id
   );
+  const allUser = useSelector((state: stateStruct) => state.user_info);
   const current_user = useSelector((state: stateStruct) => state.currentuser);
   // console.log(postInfo)
   const check_user = postInfo?.countReact.findIndex(
@@ -131,6 +131,32 @@ export default function PerNewsFeed(props: PostExtends) {
     setEditAble(!EditAble);
   }
 
+  const handleShowAllUserWhoLike = () => {
+    const allReactorID = postInfo?.countReact.map(
+      (eachReactor) => eachReactor.reactor_id
+    );
+
+    console.log(allReactorID);
+    console.log(allUser);
+    const allReactorUsername = allUser
+      .filter((user) => allReactorID?.includes(user.id))
+      .map((user) => user.email);
+    const userListHtml =
+      allReactorUsername.length > 0
+        ? `<ul style="text-align: left; padding-left: 20px;">
+            ${allReactorUsername.map((name) => `<li>~ ${name}</li>`).join("")}
+           </ul>`
+        : "<p style='color: gray;'>No users have liked this yet.</p>";
+    // console.log(allReactorUsername);
+    Swal.fire({
+      title: "Users Who Liked",
+      html: userListHtml,
+
+      showCancelButton: false,
+      confirmButtonText: "Close",
+    });
+  };
+
   return (
     <body>
       <div>
@@ -146,7 +172,11 @@ export default function PerNewsFeed(props: PostExtends) {
                     {post_user?.email.slice(0, post_user?.email.indexOf("@"))}
                   </h4>
                   <p className="_feed_inner_timeline_post_box_para flex flex-row">
-                    {Math.floor(Math.random() * 10)} minute ago .
+                    {Math.floor((Date.now() - props.post_time) / 1000 / 60) >= 1
+                      ? `${Math.floor(
+                          (Date.now() - props.post_time) / 1000 / 60
+                        )} minute ago`
+                      : "few second ago"}
                     <p className="text-blue-600 font-bold">
                       {props.isHidden ? "Private" : "Public"}
                     </p>
@@ -355,7 +385,7 @@ export default function PerNewsFeed(props: PostExtends) {
                 <p className="font-bold text-blue-600">
                   {Number(postInfo?.countReact.length)}
                 </p>
-                <h1> Likes</h1>
+                <h1 onClick={handleShowAllUserWhoLike}> Likes</h1>
               </button>
             </div>
             <div className="_feed_inner_timeline_total_reacts_txt">

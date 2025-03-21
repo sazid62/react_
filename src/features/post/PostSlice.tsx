@@ -1,10 +1,10 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
+import { createSlice, isAction, nanoid } from "@reduxjs/toolkit";
 import Swal from "sweetalert2";
 import { Comment, Post } from "../../interfaces/user_interface";
 
 const posts = JSON.parse(
   localStorage.getItem("allPosts") ||
-    '[{"post_id":"","user_id":"","isHidden":false,"postText":"","countReact":[{"reactor_id":""}],"Comments":[{"comment_id":"", "commentor_id":"","CommentText":"","commentor_name":"","commentor_img":"","Replies":[{"reply_id":"", "replier_id":"","ReplyText":"","replier_img":"","replier_name":""}]}]}]'
+    '[ {        "post_time": "",   "post_id":"","user_id":"","isHidden":false,"postText":"","countReact":[{"reactor_id":""}],"Comments":[     {"likedComment": "[{"user_id": "" }]","comment_id":"", "commentor_id":"","CommentText":"","commentor_name":"","commentor_img":"","Replies":[{"reply_id":"", "replier_id":"","ReplyText":"","replier_img":"","replier_name":""}]}]}]'
 );
 
 const initialState = {
@@ -29,13 +29,11 @@ export const postSlice = createSlice({
       );
       if (idx !== -1) {
         const user_alrdy_reacted = state.AllUserPost[idx].countReact.findIndex(
-          (elem: { reactor_id: string }) =>
-            elem.reactor_id === currentuser.id
+          (elem: { reactor_id: string }) => elem.reactor_id === currentuser.id
         );
         if (user_alrdy_reacted !== -1) {
           const updatedReactions = state.AllUserPost[idx].countReact.filter(
-            (elem: { reactor_id: string }) =>
-              elem.reactor_id !== currentuser.id
+            (elem: { reactor_id: string }) => elem.reactor_id !== currentuser.id
           );
 
           const temp = {
@@ -107,6 +105,31 @@ export const postSlice = createSlice({
         localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
       }
     },
+
+    AddLikeToComment: (state, action) => {
+      const {liker_id, comment_id}= action.payload;
+
+
+      if (liker_id === "") {
+    Swal.fire({
+      title: "Please login to like a comment!",
+      icon: "info",
+    });
+    return;
+  }
+      
+      
+      
+      state.AllUserPost.forEach(user=> {
+        if(user.user_id === liker_id) {
+          user.Comments.forEach((comment) => {
+            if(comment.comment_id === comment_id) {
+
+            }
+          })
+        }
+      })
+    },
     AddPost: (state, action) => {
       const { postText, currentuser } = action.payload;
       if (currentuser.id === "") {
@@ -119,6 +142,7 @@ export const postSlice = createSlice({
 
       const newPost = {
         post_id: nanoid(),
+        post_time: Date.now(),
         user_id: currentuser.id,
         postText: postText,
         isHidden: false,
@@ -141,16 +165,27 @@ export const postSlice = createSlice({
       });
     },
     AddReply: (state, action) => {
-      const { post_id, comment_id, replyText, replier_img, replier_name, currentuser } = action.payload;
+      const {
+        post_id,
+        comment_id,
+        replyText,
+        replier_img,
+        replier_name,
+        currentuser,
+      } = action.payload;
       if (currentuser.email === "") {
         return;
       }
 
-      const pIdx = state.AllUserPost.findIndex((post: Post) => post.post_id === post_id);
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
 
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
-        const cIdx = post.Comments.findIndex((comment: Comment) => comment.comment_id === comment_id);
+        const cIdx = post.Comments.findIndex(
+          (comment: Comment) => comment.comment_id === comment_id
+        );
 
         if (cIdx !== -1) {
           const comment = post.Comments[cIdx];
@@ -190,7 +225,9 @@ export const postSlice = createSlice({
     DeletePost: (state, action) => {
       const { post_id, currentuser } = action.payload;
 
-      const pIdx = state.AllUserPost.findIndex((post: Post) => post.post_id === post_id);
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
 
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
@@ -214,10 +251,16 @@ export const postSlice = createSlice({
         }
       }
     },
+    LikeComment: (state, action) => {
+      const {username} = action.payload;
+
+    }
     HidePost: (state, action) => {
       const { post_id, currentuser } = action.payload;
 
-      const pIdx = state.AllUserPost.findIndex((post: Post) => post.post_id === post_id);
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
 
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
@@ -246,7 +289,9 @@ export const postSlice = createSlice({
     EditPost: (state, action) => {
       const { post_id, newText, currentuser } = action.payload;
 
-      const pIdx = state.AllUserPost.findIndex((post: Post) => post.post_id === post_id);
+      const pIdx = state.AllUserPost.findIndex(
+        (post: Post) => post.post_id === post_id
+      );
 
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];

@@ -19,6 +19,7 @@ export default function DropDown() {
 
   const navigate = useNavigate();
   function handleLogout() {
+    alert("sadasd");
     Swal.fire({
       title: "Are you sure?",
       text: "you will need to login in again!!",
@@ -52,9 +53,7 @@ export default function DropDown() {
             </div>
           </div>
           <div className="_nav_profile_dropdown_info_txt">
-            <h4 className="_nav_dropdown_title">
-              {current_user.name}
-            </h4>
+            <h4 className="_nav_dropdown_title">{current_user.name}</h4>
             <a href="/profile" className="_nav_drop_profile">
               View Profile
             </a>

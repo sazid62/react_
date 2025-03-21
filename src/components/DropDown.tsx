@@ -30,7 +30,7 @@ export default function DropDown() {
       if (result.isConfirmed) {
         dispatch(logOutUser());
         Swal.fire("Logged out!", "You have been logged out.", "success");
-        navigate("/login");
+        navigate("/");
       } else if (result.dismiss === Swal.DismissReason.cancel) {
         Swal.fire("Cancelled", "You are still logged in.", "info");
       }
@@ -39,7 +39,6 @@ export default function DropDown() {
   const items: MenuProps["items"] = [
     {
       key: "1",
-      // label: current_user.id ? "user id: " + current_user.id : "",
       label: (
         <div className="_nav_profile_dropdown_info p-4">
           <div className="_nav_profile_dropdown_image ">
@@ -82,7 +81,7 @@ export default function DropDown() {
         current_user.email !== "" ? (
           <Button onClick={handleLogout}>Logout</Button>
         ) : (
-          <Link to="/login">Login</Link>
+          <Link to="/">Login</Link>
         ),
       icon: <LogoutOutlined />,
     },
@@ -106,7 +105,8 @@ export default function DropDown() {
         >
           <Link to="/" onClick={(e) => e.preventDefault()}>
             <Space>
-              {current_user.email?current_user.email.slice(0, current_user.email.indexOf("@"))
+              {current_user.email
+                ? current_user.email.slice(0, current_user.email.indexOf("@"))
                 : "login"}
               <DownOutlined />
             </Space>

@@ -1,13 +1,18 @@
-import { BellOutlined, HomeTwoTone, MessageOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import DropDown from './DropDown';
-import { Link } from 'react-router-dom';
+import {
+  BellOutlined,
+  HomeTwoTone,
+  MessageOutlined,
+  UsergroupAddOutlined,
+} from "@ant-design/icons";
+import DropDown from "./DropDown";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   return (
     <div className="bg-white shadow-md py-4">
       <div className="container mx-auto flex items-center justify-between px-6">
         <div className="flex items-center">
-          <Link to="/">
+          <Link to="/home">
             <img src="logo.svg" alt="Logo" className="h-10" />
           </Link>
         </div>
