@@ -6,61 +6,43 @@ import { stateStruct } from "../interfaces/user_interface";
 import { useNavigate } from "react-router-dom";
 
 export default function Regtemp() {
+  const dispatch = useDispatch();
 
-    const dispatch = useDispatch();
-    
-    function handleSubmit(event:FormEvent<HTMLFormElement>)
-    {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        const email = formData.get('email');
-        const password = formData.get('password')
-        const ref_pass = formData.get('rep_password')
-        if(password !== ref_pass)
-        {
-            Swal.fire({
-                title:'both passowrd doesn"t match',
-                icon:'warning'
-            })
-        }
-        else
-        {
-            dispatch(AddUser({
-                email:email,
-                password:password
-            }))
-           
-          
-        }
-        console.log(email,password)
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const ref_pass = formData.get("rep_password");
+    if (password !== ref_pass) {
+      Swal.fire({
+        title: 'both passowrd doesn"t match',
+        icon: "warning",
+      });
+    } else {
+      dispatch(
+        AddUser({
+          email: email,
+          password: password,
+        })
+      );
     }
-    const current_user = useSelector((state:stateStruct)=>state.currentuser);
-    const navigate = useNavigate();
-    if(current_user.email)
-    {
-      navigate('/')
-    }
+    console.log(email, password);
+  }
+  const current_user = useSelector((state: stateStruct) => state.currentuser);
+  const navigate = useNavigate();
+  if (current_user.email) {
+    navigate("/");
+  }
   return (
     <div>
-      <section  className="_social_registration_wrapper _layout_main_wrapper">
+      <section className="_social_registration_wrapper _layout_main_wrapper">
         <div className="_shape_one">
-          <img
-            src="shape1.svg"
-            alt=""
-            className="_shape_img"
-          />
-          <img
-            src="dark_shape.svg"
-            alt=""
-            className="_dark_shape"
-          />
+          <img src="shape1.svg" alt="" className="_shape_img" />
+          <img src="dark_shape.svg" alt="" className="_dark_shape" />
         </div>
         <div className="_shape_two">
-          <img
-            src="shape2.svg"
-            alt=""
-            className="_shape_img"
-          />
+          <img src="shape2.svg" alt="" className="_shape_img" />
           <img
             src="dark_shape1.svg"
             alt=""
@@ -68,11 +50,7 @@ export default function Regtemp() {
           />
         </div>
         <div className="_shape_three">
-          <img
-            src="shape3.svg"
-            alt=""
-            className="_shape_img"
-          />
+          <img src="shape3.svg" alt="" className="_shape_img" />
           <img
             src="dark_shape2.svg"
             alt=""
@@ -85,27 +63,17 @@ export default function Regtemp() {
               <div className="col-xl-8 col-lg-8 col-md-12 col-sm-12">
                 <div className="_social_registration_right">
                   <div className="_social_registration_right_image">
-                    <img
-                      src="registration.png"
-                      alt="Image"
-                    />
+                    <img src="registration.png" alt="Image" />
                   </div>
                   <div className="_social_registration_right_image_dark">
-                    <img
-                      src="registration1.png"
-                      alt="Image"
-                    />
+                    <img src="registration1.png" alt="Image" />
                   </div>
                 </div>
               </div>
               <div className="col-xl-4 col-lg-4 col-md-12 col-sm-12">
                 <div className="_social_registration_content">
                   <div className="_social_registration_right_logo _mar_b28">
-                    <img
-                      src="logo.svg"
-                      alt="Image"
-                      className="_right_logo"
-                    />
+                    <img src="logo.svg" alt="Image" className="_right_logo" />
                   </div>
                   <p className="_social_registration_content_para _mar_b8">
                     Get Started Now
@@ -117,17 +85,16 @@ export default function Regtemp() {
                     type="button"
                     className="_social_registration_content_btn _mar_b40"
                   >
-                    <img
-                      src="google.svg"
-                      alt="Image"
-                      className="_google_img"
-                    />{" "}
+                    <img src="google.svg" alt="Image" className="_google_img" />{" "}
                     <span>Register with google</span>
                   </button>
                   <div className="_social_registration_content_bottom_txt _mar_b40">
                     <span>Or</span>
                   </div>
-                  <form onSubmit={handleSubmit} className="_social_registration_form">
+                  <form
+                    onSubmit={handleSubmit}
+                    className="_social_registration_form"
+                  >
                     <div className="row">
                       <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                         <div className="_social_registration_form_input _mar_b14">
@@ -161,7 +128,7 @@ export default function Regtemp() {
                             Repeat Password
                           </label>
                           <input
-                           name="rep_password"
+                            name="rep_password"
                             required
                             type="password"
                             className="form-control _social_registration_input"
