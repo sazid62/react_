@@ -172,7 +172,15 @@ export default function LoginTemp() {
                       <div className="_social_login_bottom_txt">
                         <p className="_social_login_bottom_txt_para">
                           Don't have an account?{" "}
-                          <Link to="/register">Create New Account</Link>
+                          <Link
+                            to="/register"
+                            onClick={() => {
+                              const navigate = useNavigate();
+                              navigate("/regiser");
+                            }}
+                          >
+                            Create New Account
+                          </Link>
                         </p>
                       </div>
                     </div>

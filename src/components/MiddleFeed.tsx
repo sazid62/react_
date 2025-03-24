@@ -20,7 +20,6 @@ export default function MiddleFeed() {
           <MessengerCircle />
 
           <PostFromHere />
-          {/* ekta post er jonno ekta  */}
           {post.map(
             (elem: Post, index) =>
               (elem.isHidden === false || elem.user_id === current_user.id) && (

@@ -15,14 +15,37 @@ import {
 import CommentSection from "./CommentSection";
 import RecentComment from "./RecentComment";
 import Swal from "sweetalert2";
+import EditPost_DropDown from "./EditPost_DropDown";
 
 interface PostExtends extends Post {
   show: boolean;
   handleShowCmnt: () => void;
 }
 
+const getTimeAgo = (postTime: number) => {
+  const seconds = Math.floor((Date.now() - postTime) / 1000);
+
+  if (seconds < 60) {
+    return seconds <= 1 ? "1 second ago" : `${seconds} seconds ago`;
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) {
+    return minutes <= 1 ? "1 minute ago" : `${minutes} minutes ago`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return hours <= 1 ? "1 hour ago" : `${hours} hours ago`;
+  }
+
+  const days = Math.floor(hours / 24);
+  return days <= 1 ? "1 day ago" : `${days} days ago`;
+};
+
 export default function PerNewsFeed(props: PostExtends) {
   const [isDropShow, setIsDropShow] = useState(false);
+  const [clickOnCommentButton, setClickOnCommentButton] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const handleButtonClick = () => {
@@ -112,7 +135,7 @@ export default function PerNewsFeed(props: PostExtends) {
   }
 
   const [EditAble, setEditAble] = useState<boolean>(false);
-  const [newText, setNewtext] = useState<string>("");
+  const [newText, setNewtext] = useState<string>(props.postText);
   // console.log(EditAble);
 
   function handleEdit() {
@@ -121,11 +144,12 @@ export default function PerNewsFeed(props: PostExtends) {
     setEditAble(!EditAble);
   }
 
-  function handleEditSubmit() {
+  function handleEditSubmit(updatedText) {
+    console.log("This is handle new TEXT:", updatedText);
     dispatch(
       EditPost({
         post_id: props.post_id,
-        newText: newText,
+        newText: updatedText, // Use the updated newText passed from the child
       })
     );
     setEditAble(!EditAble);
@@ -172,11 +196,7 @@ export default function PerNewsFeed(props: PostExtends) {
                     {post_user?.email.slice(0, post_user?.email.indexOf("@"))}
                   </h4>
                   <p className="_feed_inner_timeline_post_box_para flex flex-row">
-                    {Math.floor((Date.now() - props.post_time) / 1000 / 60) >= 1
-                      ? `${Math.floor(
-                          (Date.now() - props.post_time) / 1000 / 60
-                        )} minute ago`
-                      : "few second ago"}
+                    {getTimeAgo(props.post_time)}
                     <p className="text-blue-600 font-bold">
                       {props.isHidden ? "Private" : "Public"}
                     </p>
@@ -353,21 +373,15 @@ export default function PerNewsFeed(props: PostExtends) {
             </div>
 
             {EditAble ? (
-              <div className="bg-gray-100 p-1 my-2 rounded-lg flex flex-col items-start gap-1">
-                <textarea
-                  value={newText}
-                  onChange={(e) => setNewtext(e.target.value)}
-                  className="_feed_inner_timeline_post_input h-16 w-[100%] rounded-lg p-2"
-                />
-                <button
-                  onClick={handleEditSubmit}
-                  className="_feed_inner_timeline_post_submit"
-                >
-                  <div className="text-blue-600 font-bold bg-gray-200 p-2 rounded-2xl hover:bg-gray-300">
-                    Done
-                    <ArrowRightOutlined />
-                  </div>
-                </button>
+              <div>
+                <div>
+                  <h4 className="_feed_inner_timeline_post_title">{newText}</h4>
+                  <EditPost_DropDown
+                    handleEditSubmit={handleEditSubmit}
+                    newText={newText}
+                    profile={post_user?.img}
+                  />
+                </div>
               </div>
             ) : (
               <h4 className="_feed_inner_timeline_post_title">
@@ -385,7 +399,9 @@ export default function PerNewsFeed(props: PostExtends) {
                 <p className="font-bold text-blue-600">
                   {Number(postInfo?.countReact.length)}
                 </p>
-                <h1 onClick={handleShowAllUserWhoLike}> Likes</h1>
+                <h1 onClick={handleShowAllUserWhoLike}>
+                  {Number(postInfo?.countReact.length) <= 1 ? "Like" : "Likes"}{" "}
+                </h1>
               </button>
             </div>
             <div className="_feed_inner_timeline_total_reacts_txt">
@@ -429,12 +445,19 @@ export default function PerNewsFeed(props: PostExtends) {
             )}
 
             <button
-              onClick={props.handleShowCmnt}
+              onClick={() => {
+                setClickOnCommentButton(!clickOnCommentButton);
+                props.handleShowCmnt;
+              }}
               className="_feed_inner_timeline_reaction_comment _feed_reaction"
             >
               <span className="_feed_inner_timeline_reaction_link">
                 {" "}
-                <span>
+                <span
+                  onClick={() => {
+                    setClickOnCommentButton(!clickOnCommentButton);
+                  }}
+                >
                   <svg
                     className="_reaction_svg"
                     xmlns="http://www.w3.org/2000/svg"
@@ -481,8 +504,12 @@ export default function PerNewsFeed(props: PostExtends) {
               </span>
             </button>
           </div>
-          <CommentSection {...props} />
-          <RecentComment {...props} />
+          {clickOnCommentButton && (
+            <div>
+              <CommentSection {...props} />
+              <RecentComment {...props} />
+            </div>
+          )}
         </div>
       </div>
     </body>

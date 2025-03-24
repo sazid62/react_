@@ -7,12 +7,12 @@ import MiddleFeed from "../components/MiddleFeed";
 export default function HomePage() {
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const currentUser = localStorage.getItem("current_user");
-  //   if (!currentUser || currentUser === "null") {
-  //     navigate("/");
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    const currentUser = localStorage.getItem("current_user");
+    if (!currentUser || currentUser === "null") {
+      navigate("/");
+    }
+  }, [navigate]);
 
   return (
     <div className="flex gap-4 mx-60">

@@ -27,12 +27,13 @@ export default function Regtemp() {
         })
       );
     }
-    console.log(email, password);
+    // console.log(email, password);
   }
   const current_user = useSelector((state: stateStruct) => state.currentuser);
   const navigate = useNavigate();
+
   if (current_user.email) {
-    navigate("/");
+    navigate("/home");
   }
   return (
     <div>
