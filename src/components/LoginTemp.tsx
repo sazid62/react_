@@ -1,30 +1,92 @@
-import { FormEvent } from "react";
-import { loginUser } from "../features/login/Userslice";
+import { FormEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import Swal from "sweetalert2";
+
+import {
+  AddUser,
+  initializeAllPost,
+  initializeUser,
+} from "../features/login/Userslice";
 import { stateStruct } from "../interfaces/user_interface";
+import conf from "../conf/conf";
+import { useInitializeApp } from "./useInitializeApp";
 
 export default function LoginTemp() {
-  const dispatch = useDispatch();
-  const current_user = useSelector((state: stateStruct) => state.currentuser);
-  const navigate = useNavigate();
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email");
-    const password = formData.get("password");
-    dispatch(
-      loginUser({
-        email: email,
-        password: password,
-      })
-    );
+  const [initializeAll, setInititalizeAll] = useState(false);
 
-    //  console.log(current_user)
-  }
-  if (current_user.email !== "") {
-    navigate("/home");
-  }
+  const dispatch = useDispatch();
+
+  useInitializeApp(initializeAll);
+
+  const navigate = useNavigate();
+  const current_user = useSelector((state: stateStruct) => state.currentuser);
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  // Check login status based on Redux state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!formData.email || !formData.password) {
+      Swal.fire("Error", "Please fill in all fields", "error");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // console.log("reraraereeeeeeeeeeeeeeeeeeeeeeeeeeee");
+      const res = await fetch(`${conf.apiUrl}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        const data = await res.json();
+
+        setInititalizeAll(true);
+
+        await Swal.fire("Success!", "You are now logged in", "success");
+        navigate("/home");
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+    } catch (error) {
+      Swal.fire(
+        "Login Failed",
+        error instanceof Error ? error.message : "An unexpected error occurred",
+        "error"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (current_user.id && current_user.email) {
+      navigate("/home");
+    }
+  }, [current_user, navigate]);
+
   return (
     <div>
       <section className="_social_login_wrapper _layout_main_wrapper">
@@ -111,6 +173,8 @@ export default function LoginTemp() {
                             name="email"
                             type="email"
                             className="form-control _social_login_input"
+                            value={formData.email}
+                            onChange={handleChange}
                           />
                         </div>
                       </div>
@@ -124,6 +188,8 @@ export default function LoginTemp() {
                             name="password"
                             type="password"
                             className="form-control _social_login_input"
+                            value={formData.password}
+                            onChange={handleChange}
                           />
                         </div>
                       </div>
@@ -160,8 +226,9 @@ export default function LoginTemp() {
                           <button
                             type="submit"
                             className="_social_login_form_btn_link _btn1"
+                            disabled={isSubmitting}
                           >
-                            Login now
+                            {isSubmitting ? "Logging in..." : "Login now"}
                           </button>
                         </div>
                       </div>
@@ -172,15 +239,7 @@ export default function LoginTemp() {
                       <div className="_social_login_bottom_txt">
                         <p className="_social_login_bottom_txt_para">
                           Don't have an account?{" "}
-                          <Link
-                            to="/register"
-                            onClick={() => {
-                              const navigate = useNavigate();
-                              navigate("/regiser");
-                            }}
-                          >
-                            Create New Account
-                          </Link>
+                          <Link to="/register">Create New Account</Link>
                         </p>
                       </div>
                     </div>

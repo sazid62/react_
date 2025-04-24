@@ -1,97 +1,59 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
+import { createSlice, current, nanoid } from "@reduxjs/toolkit";
 import Swal from "sweetalert2";
 import { Comment, Post, userStruct } from "../../interfaces/user_interface";
+import axios from "axios";
+import conf from "../../conf/conf";
 
-const user = JSON.parse(
-  localStorage.getItem("current_user") || '{"id":"","email":""}'
-);
-const users = JSON.parse(
-  localStorage.getItem("userinfo") ||
-    '[{"id":"1","email":"sajid@gmail.com","password":"1234","img":"https://i.pravatar.cc/48?u=118834"}]'
-);
-
-const posts = JSON.parse(
-  localStorage.getItem("allPosts") ||
-    '[{"post_time" : "", "post_id":"","user_id":"","isHidden":false,"postText":"","countReact":[{"reactor_id":""}],"Comments":[{  "like_comment_userList" : [{"user_name" : ""}]   ,                    "comment_id":"", "commentor_id":"","CommentText":"","commentor_name":"","commentor_img":"","Replies":[{"reply_id":"", "replier_id":"","ReplyText":"","replier_img":"","replier_name":""}]}]}]'
-);
+// Define initial empty state
 const initialState = {
-  user_info: users,
+  user_info: JSON.parse(
+    localStorage.getItem("userinfo") ||
+      '[{"":"1","email":"sajid@gmail.com","password":"1234","img":"https://i.pravatar.cc/48?u=118834"}]'
+  ),
   currentuser: {
-    id: user.id,
-    email: user.email,
-    img: user.img,
+    id: "",
+    email: "",
+    img:
+      "https://i.pravatar.cc/48?u=115" +
+      String(Math.floor(Math.random() * 1000)),
   },
-  AllUserPost: posts,
+  AllUserPost: JSON.parse(
+    localStorage.getItem("allPosts") ||
+      '[{"post_time":"","post_id":"","user_id":"","isHidden":false,"postText":"","countReact":[{"reactor_id":""}],"Comments":[{"like_comment_userList":[{"user_name":""}],"comment_id":"","commentor_id":"","CommentText":"","commentor_name":"","commentor_img":"","Replies":[{"reply_id":"","replier_id":"","ReplyText":"","replier_img":"","replier_name":""}]}]}]'
+  ),
   ShowComment: false,
+
+  allPost: [],
 };
 
+// Create the slice
 export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    loginUser: (state, action) => {
-      const { email, password } = action.payload;
-      const find = state.user_info.find((elem: userStruct) => {
-        if (elem.password === password && elem.email === email) {
-          return elem;
-        }
-      });
-      //  console.log("i am in loginuser slice", action.payload.password);
-      if (find) {
-        state.currentuser = find;
-        localStorage.setItem("current_user", JSON.stringify(find));
-        Swal.fire({
-          title: `Welcome ${state.currentuser.email}`,
-          text: "click OK to continue!",
-          icon: "success",
-        });
-      } else {
-        Swal.fire({
-          title: `Wrong username or password!!`,
-          text: "Login failed!",
-          icon: "error",
-        });
-        // console.log(state.currentuser.username);
-        // alert('successed')
-      }
+    initializeUser: (state, action) => {
+      // console.log(action.payload, "testtttttttttt ");
+      const { userId, email } = action.payload;
+      state.currentuser.id = userId || "";
+      state.currentuser.email = email || "";
+    },
+    initializeAllPost: (state, action) => {
+      state.allPost = action.payload;
+    },
+    AddUser: (state, action) => {
+      const { email, id, img } = action.payload;
+      state.currentuser.email = email;
+      state.currentuser.id = id;
+      state.currentuser.img = img;
     },
     logOutUser: (state) => {
       state.currentuser = { id: "", email: "", img: "" };
       localStorage.removeItem("current_user");
-    },
-    AddUser: (state, action) => {
-      const { email, password } = action.payload;
-      const idx = state.user_info.findIndex(
-        (elem: userStruct) => elem.email === email
-      );
-      if (idx === -1) {
-        const newuser = {
-          id: nanoid(),
-          email: email,
-          password: password,
-          img:
-            "https://i.pravatar.cc/48?u=115" +
-            String(Math.floor(Math.random() * 1000)),
-        };
-        state.user_info.push(newuser);
-        Swal.fire({
-          title: "user created succesfully!!",
-          icon: "success",
-        });
-        state.currentuser = {
-          id: newuser.id,
-          email: newuser.email,
-          img: newuser.img,
-        };
-        localStorage.setItem("current_user", JSON.stringify(state.currentuser));
-      } else {
-        Swal.fire({
-          title: "user email already exist",
-          icon: "warning",
-        });
-        return;
-      }
-      localStorage.setItem("userinfo", JSON.stringify(state.user_info));
+      Swal.fire({
+        title: "Logged Out",
+        text: "click OK to continue!",
+        icon: "success",
+      });
     },
     AddReact: (state, action) => {
       if (state.currentuser.id === "") {
@@ -104,17 +66,15 @@ export const userSlice = createSlice({
       const { post_id } = action.payload;
       console.log(post_id);
       const idx = state.AllUserPost.findIndex(
-        (elem: Post) => elem.post_id === post_id
+        (elem) => elem.post_id === post_id
       );
       if (idx !== -1) {
         const user_alrdy_reacted = state.AllUserPost[idx].countReact.findIndex(
-          (elem: { reactor_id: string }) =>
-            elem.reactor_id === state.currentuser.id
+          (elem) => elem.reactor_id === state.currentuser.id
         );
         if (user_alrdy_reacted !== -1) {
           const updatedReactions = state.AllUserPost[idx].countReact.filter(
-            (elem: { reactor_id: string }) =>
-              elem.reactor_id !== state.currentuser.id
+            (elem) => elem.reactor_id !== state.currentuser.id
           );
 
           const temp = {
@@ -158,7 +118,7 @@ export const userSlice = createSlice({
       }
       const { post_id, CommentText } = action.payload;
       const idx = state.AllUserPost.findIndex(
-        (post: Post) => post.post_id === post_id
+        (post) => post.post_id === post_id
       );
 
       if (idx !== -1) {
@@ -187,7 +147,6 @@ export const userSlice = createSlice({
         ];
         localStorage.setItem("allPosts", JSON.stringify(state.AllUserPost));
       }
-      //   console.log(state.AllUserPost[idx]);
     },
 
     AddLikeToComment: (state, action) => {
@@ -256,15 +215,13 @@ export const userSlice = createSlice({
           Swal.showLoading();
         },
       });
-      // console.log(state.AllUserPost)
     },
-
     AddReply: (state, action) => {
       const { post_id, comment_id, replyText, replier_img, replier_name } =
         action.payload;
 
       const pIdx = state.AllUserPost.findIndex(
-        (post: Post) => post.post_id === post_id
+        (post) => post.post_id === post_id
       );
       if (state.currentuser.email === "") {
         return;
@@ -273,7 +230,7 @@ export const userSlice = createSlice({
       if (pIdx !== -1) {
         const post = state.AllUserPost[pIdx];
         const cIdx = post.Comments.findIndex(
-          (comment: Comment) => comment.comment_id === comment_id
+          (comment) => comment.comment_id === comment_id
         );
 
         if (cIdx !== -1) {
@@ -316,7 +273,7 @@ export const userSlice = createSlice({
       const { post_id } = action.payload;
 
       const pIdx = state.AllUserPost.findIndex(
-        (post: Post) => post.post_id === post_id
+        (post) => post.post_id === post_id
       );
 
       if (pIdx !== -1) {
@@ -345,7 +302,7 @@ export const userSlice = createSlice({
       const { post_id } = action.payload;
 
       const pIdx = state.AllUserPost.findIndex(
-        (post: Post) => post.post_id === post_id
+        (post) => post.post_id === post_id
       );
       console.log(post_id);
       if (pIdx !== -1) {
@@ -376,7 +333,7 @@ export const userSlice = createSlice({
       const { post_id, newText } = action.payload;
 
       const pIdx = state.AllUserPost.findIndex(
-        (post: Post) => post.post_id === post_id
+        (post) => post.post_id === post_id
       );
 
       if (pIdx !== -1) {
@@ -407,7 +364,7 @@ export const userSlice = createSlice({
 });
 
 export const {
-  loginUser,
+  initializeUser,
   logOutUser,
   AddUser,
   AddComment,
@@ -418,5 +375,6 @@ export const {
   HidePost,
   EditPost,
   AddLikeToComment,
+  initializeAllPost,
 } = userSlice.actions;
 export default userSlice.reducer;

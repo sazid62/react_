@@ -1,14 +1,30 @@
-import { FormEvent } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AddUser } from "../features/login/Userslice";
+import {
+  AddUser,
+  initializeUser,
+  loginUser,
+} from "../features/login/Userslice";
 import Swal from "sweetalert2";
 import { stateStruct } from "../interfaces/user_interface";
 import { useNavigate } from "react-router-dom";
+import conf from "../conf/conf";
+import Password from "antd/es/input/Password";
+import { useInitializeApp } from "./useInitializeApp";
 
 export default function Regtemp() {
   const dispatch = useDispatch();
+  const [initializeAll, setInititalizeAll] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const navigate = useNavigate();
+  if (initializeAll) {
+    console.log("calling INITIALIZSE");
+    useInitializeApp(dispatch);
+    navigate("/home");
+  }
+  const current_user = useSelector((state: stateStruct) => state.currentuser);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email");
@@ -16,24 +32,65 @@ export default function Regtemp() {
     const ref_pass = formData.get("rep_password");
     if (password !== ref_pass) {
       Swal.fire({
-        title: 'both passowrd doesn"t match',
+        title: "Passwords don't match",
         icon: "warning",
       });
     } else {
-      dispatch(
-        AddUser({
-          email: email,
-          password: password,
-        })
-      );
-    }
-    // console.log(email, password);
-  }
-  const current_user = useSelector((state: stateStruct) => state.currentuser);
-  const navigate = useNavigate();
+      const payload = {
+        name: "none",
+        email: email,
+        password: password,
+      };
 
-  if (current_user.email) {
-    navigate("/home");
+      try {
+        const res = await fetch("http://localhost:3333/reg", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+        await fetch("http://localhost:3333/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+
+          Swal.fire({
+            title: "User created successfully!",
+            icon: "success",
+          });
+
+          // dispatch(
+          //   initializeUser({
+          //     userId: data.data.userId || "",
+          //     email: data.data.email || "",
+          //   })
+          // );
+          setInititalizeAll(true);
+
+          //make all post, and currentuser inititalize
+        } else {
+          Swal.fire({
+            title: "Error In Backend",
+            icon: "warning",
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: "Something went wrong!",
+          text: error.message || "Please try again later.",
+          icon: "error",
+        });
+      }
+    }
   }
   return (
     <div>
@@ -181,3 +238,7 @@ export default function Regtemp() {
     </div>
   );
 }
+
+// nextJS env system
+// adonisJS env system
+//vi te

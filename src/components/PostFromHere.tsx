@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AddPost } from "../features/login/Userslice";
+import { AddPost, initializeAllPost } from "../features/login/Userslice";
 import Swal from "sweetalert2";
 import { stateStruct } from "../interfaces/user_interface";
 import { UserOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { useInitializeApp } from "./useInitializeApp";
 
 export default function PostFromHere() {
   const [postText, setPostText] = useState<string>("");
-
   const dispatch = useDispatch();
   const current_user = useSelector((state: stateStruct) => state.currentuser);
+
+  // Initialize the app when component mounts
+  useInitializeApp(dispatch);
 
   function handlePost() {
     if (postText === "") {
@@ -18,18 +22,40 @@ export default function PostFromHere() {
         icon: "warning",
       });
     } else {
-      dispatch(
-        AddPost({
-          postText: postText,
-        })
-      );
+      fetch("http://localhost:3333/createpost", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          user_id: current_user.id,
+          post_text: postText,
+        }),
+      }).then((res) => {
+        if (res.ok) {
+          // Instead of calling the hook here, you should either:
+          // 1. Manually fetch the updated posts
+          // 2. Or trigger a state change that will cause the parent component to re-run useInitializeApp
+
+          // Option 1: Manually fetch posts
+          fetch(`http://localhost:3333/posts`, {
+            method: "GET",
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              dispatch(initializeAllPost(data.data));
+            });
+        }
+      });
+
       setPostText("");
     }
   }
+
   function imageAddHandler() {
     alert("this is iamge handelr");
   }
-
   return (
     <div>
       <div className="_feed_inner_text_area  _b_radious6 _padd_b24 _padd_t24 _padd_r24 _padd_l24 _mar_b16">

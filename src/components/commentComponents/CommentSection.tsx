@@ -1,4 +1,4 @@
-import { KeyboardEvent, useState } from "react";
+import { KeyboardEvent, useEffect, useState } from "react";
 import { Post, stateStruct } from "../../interfaces/user_interface";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -17,15 +17,11 @@ export default function CommentSection(props: Post) {
       });
       return;
     }
-    dispatch(
-      AddComment({
-        post_id: props.post_id,
-        CommentText: comment,
-      })
-    );
+
     setComment("");
     //console.log(comment);
   }
+
   const current_user = useSelector((state: stateStruct) => state.currentuser);
   function handleEnterKey(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {

@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { stateStruct } from "../../interfaces/user_interface";
 import { logOutUser } from "../../features/login/Userslice";
 import Swal from "sweetalert2";
+import { logoutFromServer } from "../useInitializeApp";
 
 export default function DropDown() {
   const current_user = useSelector((state: stateStruct) => state.currentuser);
@@ -19,7 +20,6 @@ export default function DropDown() {
 
   const navigate = useNavigate();
   function handleLogout() {
-    alert("sadasd");
     Swal.fire({
       title: "Are you sure?",
       text: "you will need to login in again!!",
@@ -29,7 +29,10 @@ export default function DropDown() {
       cancelButtonText: "No, stay logged in",
     }).then((result) => {
       if (result.isConfirmed) {
-        dispatch(logOutUser());
+        // dispatch(logOutUser());
+        // Loging out from server
+        console.log("sajiiiiiiiiiiiiiiiiiiiii");
+        // logoutFromServer();
         Swal.fire("Logged out!", "You have been logged out.", "success");
         navigate("/login");
       } else if (result.dismiss === Swal.DismissReason.cancel) {

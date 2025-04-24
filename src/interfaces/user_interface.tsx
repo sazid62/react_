@@ -13,6 +13,13 @@ export interface Reaction {
   reactor_id: string;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  password?: string;
+  img?: string;
+}
+
 export interface Post {
   post_id: string;
   post_time: number;
@@ -22,7 +29,18 @@ export interface Post {
   countReact: Reaction[];
   Comments: Comment[];
 }
-
+export interface allPostUser {
+  email: string;
+  name: string;
+  userId: number;
+}
+export interface allPost {
+  postId: number;
+  userId: number;
+  postText: string;
+  postCreatedAt: string;
+  user?: allPostUser[];
+}
 export interface Comment {
   comment_id: string;
   commentor_id: string;
@@ -46,6 +64,7 @@ export interface stateStruct {
   user_info: userStruct[];
   currentuser: userStruct;
   AllUserPost: Post[];
+  allPost: allPost[];
 }
 
 export interface CommentWPostId extends Comment {

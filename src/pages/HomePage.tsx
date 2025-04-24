@@ -7,11 +7,14 @@ import MiddleFeed from "../components/MiddleFeed";
 export default function HomePage() {
   const navigate = useNavigate();
 
+
+
+  
   useEffect(() => {
-    const currentUser = localStorage.getItem("current_user");
-    if (!currentUser || currentUser === "null") {
-      navigate("/");
-    }
+    // const currentUser = localStorage.getItem("current_user");
+    // if (!currentUser || currentUser === "null") {
+    //   navigate("/");
+    // }
   }, [navigate]);
 
   return (

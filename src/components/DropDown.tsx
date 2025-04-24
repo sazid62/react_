@@ -18,7 +18,7 @@ export default function DropDown() {
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
-  function handleLogout() {
+  async function handleLogout() {
     Swal.fire({
       title: "Are you sure?",
       text: "you will need to login in again!!",
@@ -26,8 +26,15 @@ export default function DropDown() {
       showCancelButton: true,
       confirmButtonText: "Yes, log out!",
       cancelButtonText: "No, stay logged in",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
+        const response = await fetch("http://localhost:3333/logout", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         dispatch(logOutUser());
         Swal.fire("Logged out!", "You have been logged out.", "success");
         navigate("/");
@@ -52,7 +59,7 @@ export default function DropDown() {
           </div>
           <div className="_nav_profile_dropdown_info_txt">
             <h4 className="_nav_dropdown_title">
-              {current_user.email.slice(0, current_user.email.indexOf("@"))}
+              {/* {current_user.email.slice(0, current_user.email.indexOf("@"))} */}
             </h4>
             <a href="/" className="_nav_drop_profile">
               View Profile
